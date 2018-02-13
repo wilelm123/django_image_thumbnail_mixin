@@ -4,7 +4,7 @@ django_image_thumbnail_mixin
 Before to use, you should set IMAGE_FIELD, THUMBNAIL_FIELD, THUMBNAIL_BASE_SIZE first,
 
 
-Example:
+Usage:
 
 .. code-block:: python
 
