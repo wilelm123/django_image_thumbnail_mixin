@@ -1,13 +1,24 @@
-# django_image_thumbnail_mixin
+django_image_thumbnail_mixin
+===========================
+
+Before to use, you should set IMAGE_FIELD, THUMBNAIL_FIELD, THUMBNAIL_BASE_SIZE first,
 
 
-Before to use, you should set IMAGE_FIELD, THUMBNAIL_FIELD, BASE_SIZE first,
+Example:
 
-for example:
+.. code-block:: python
 
-class User(models.Model):
-    name = models.CharField(max_length=100)
-    avatar = models.ImageField(upload_to=settings.UPLOAD_TO, null=True, blank=True)
-    thumbnail = models.Image(upload_to=settings.UPLOAD_TO, null=True, blank=True)
+    from django.db import models
+    from project.common.models import ImageThumbnailMixin
 
-    IMAGE_FIELD, THUMBNAIL_FIELD, BASE_SIZE = "avatar", "thumbnail", 200
+
+    class User(models.Model, ImageThumbnailMixin):
+        name = models.CharField(max_length=100)
+        avatar = models.ImageField(upload_to=settings.UPLOAD_TO, null=True, blank=True)
+        thumbnail = models.Image(upload_to=settings.UPLOAD_TO, null=True, blank=True)
+
+        IMAGE_FIELD, THUMBNAIL_FIELD, THUMBNAIL_BASE_SIZE = "avatar", "thumbnail", 200
+
+        def save(self, *args, **kwargs):
+            self.create_thumbnail()
+            return super().save(*args, **kwargs)
