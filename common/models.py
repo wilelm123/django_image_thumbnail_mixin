@@ -67,6 +67,7 @@ class ImageThumbnailMixin:
 
         if django_type == "image/png":
             pil_type, file_extension = 'png', 'png'
+
         img = Image.open(io.BytesIO(image_field.read()))
         w_percent = self.THUMBNAIL_BASE_SIZE / float(img.size[0])
         h_size = int(float(img.size[1]) * w_percent)
