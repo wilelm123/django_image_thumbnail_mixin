@@ -8,7 +8,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 
 class ImageThumbnailMixin:
     """
-    Before to use, you should set IMAGE_FIELD, THUMBNAIL_FIELD, BASE_SIZE first,
+    Before to use, you should set IMAGE_FIELD, THUMBNAIL_FIELD, THUMBNAIL_BASE_SIZE first,
 
     for example:
 
@@ -17,7 +17,7 @@ class ImageThumbnailMixin:
         avatar = models.ImageField(upload_to=settings.UPLOAD_TO, null=True, blank=True)
         thumbnail = models.Image(upload_to=settings.UPLOAD_TO, null=True, blank=True)
 
-        IMAGE_FIELD, THUMBNAIL_FIELD, BASE_SIZE = "avatar", "thumbnail", 200
+        IMAGE_FIELD, THUMBNAIL_FIELD, THUMBNAIL_BASE_SIZE = "avatar", "thumbnail", 200
 
     Tested on Python3.6.3 Only
 
