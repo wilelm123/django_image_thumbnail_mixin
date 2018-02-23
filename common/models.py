@@ -39,6 +39,8 @@ class ImageThumbnailMixin:
 
     def get_image_md5(self, image_field):
         image = getattr(self, image_field)
+        if not image:
+            return
         md5 = hashlib.md5()
         for chunk in image.chunks():
             md5.update(chunk)
@@ -47,7 +49,7 @@ class ImageThumbnailMixin:
         return val
 
     def image_changed(self):
-        cached_md5 = getattr(self, "md5_{0}_cache".format(self.IMAGE_FIELD))
+        cached_md5 = getattr(self, "md5_{0}_cache".format(self.IMAGE_FIELD), None)
         return cached_md5 != self.get_image_md5(self.IMAGE_FIELD)
 
     def create_thumbnail(self):
