@@ -39,7 +39,7 @@ class ImageThumbnailMixin:
 
     def get_image_md5(self, image_field):
         image = getattr(self, image_field)
-        if not image:
+        if not image or not image._file:
             return
         md5 = hashlib.md5()
         for chunk in image.chunks():
@@ -60,8 +60,8 @@ class ImageThumbnailMixin:
         image_field = getattr(self, self.IMAGE_FIELD)
         thumbnail_field = getattr(self, self.THUMBNAIL_FIELD)
 
-        if not image_field or not hasattr(image_field.file, "content_type") or \
-                not self.image_changed():
+        if not image_field or image_field._file or \
+                not hasattr(image_field.file, "content_type") or not self.image_changed():
             return
 
         django_type = image_field.file.content_type
