@@ -3,12 +3,13 @@ import io
 import hashlib
 
 from PIL import Image
+from django.db import models
 from django.core.files.uploadedfile import SimpleUploadedFile
 
 
 class ImageThumbnailMixin:
     """
-    Before to use, you should set IMAGE_FIELD, THUMBNAIL_FIELD, THUMBNAIL_BASE_SIZE first,
+    Before to use, you should set IMAGE_FIELD, THUMBNAIL_FIELD, BASE_SIZE first,
 
     for example:
 
@@ -17,9 +18,7 @@ class ImageThumbnailMixin:
         avatar = models.ImageField(upload_to=settings.UPLOAD_TO, null=True, blank=True)
         thumbnail = models.Image(upload_to=settings.UPLOAD_TO, null=True, blank=True)
 
-        IMAGE_FIELD, THUMBNAIL_FIELD, THUMBNAIL_BASE_SIZE = "avatar", "thumbnail", 200
-
-    Tested on Python3.6.3 Only
+        IMAGE_FIELD, THUMBNAIL_FIELD, BASE_SIZE = "avatar", "thumbnail", 200
 
     """
 
@@ -40,7 +39,7 @@ class ImageThumbnailMixin:
     def get_image_md5(self, image_field):
         image = getattr(self, image_field)
         if not image or not image._file:
-            return
+            return None
         md5 = hashlib.md5()
         for chunk in image.chunks():
             md5.update(chunk)
@@ -52,6 +51,14 @@ class ImageThumbnailMixin:
         cached_md5 = getattr(self, "md5_{0}_cache".format(self.IMAGE_FIELD), None)
         return cached_md5 != self.get_image_md5(self.IMAGE_FIELD)
 
+    def is_image(self, field):
+        f = io.BytesIO(field.read())
+        try:
+            Image.open(f)
+            return True
+        except OSError:
+            return False
+
     def create_thumbnail(self):
         """
         Create model image field thumbnail
@@ -60,8 +67,14 @@ class ImageThumbnailMixin:
         image_field = getattr(self, self.IMAGE_FIELD)
         thumbnail_field = getattr(self, self.THUMBNAIL_FIELD)
 
-        if not image_field or image_field._file or \
-                not hasattr(image_field.file, "content_type") or not self.image_changed():
+        if not isinstance(image_field, models.ImageField):
+            return
+
+        # image field not set or file is not image or image not changed
+        if not image_field or not image_field._file or \
+                not hasattr(image_field.file, "content_type") or \
+                not self.is_image(image_field) or \
+                not self.image_changed():
             return
 
         django_type = image_field.file.content_type
@@ -69,7 +82,6 @@ class ImageThumbnailMixin:
 
         if django_type == "image/png":
             pil_type, file_extension = 'png', 'png'
-
         img = Image.open(io.BytesIO(image_field.read()))
         w_percent = self.THUMBNAIL_BASE_SIZE / float(img.size[0])
         h_size = int(float(img.size[1]) * w_percent)
@@ -78,7 +90,7 @@ class ImageThumbnailMixin:
         temp_handler = io.BytesIO()
         img.save(temp_handler, pil_type)
         temp_handler.seek(0)
-        base_name, ext = os.path.splitext(os.path.split(image_field.name)[-1])
+        base_name = os.path.splitext(os.path.split(image_field.name)[-1])[0]
         file_name = '{0}_thumbnail.{1}'.format(base_name, file_extension)
         suf = SimpleUploadedFile(file_name, temp_handler.read(),
                                  content_type=django_type)
