@@ -20,5 +20,6 @@ Usage:
         IMAGE_FIELD, THUMBNAIL_FIELD, THUMBNAIL_BASE_SIZE = "avatar", "thumbnail", 200
 
         def save(self, *args, **kwargs):
+            res = super().save(*args, **kwargs)
             self.create_thumbnail()
-            return super().save(*args, **kwargs)
+            return res
